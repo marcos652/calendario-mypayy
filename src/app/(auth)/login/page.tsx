@@ -18,25 +18,36 @@ import { useAuth } from "@/hooks/useAuth";
 type LoginValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-      function handleReset() {
-        const email = getValues("email");
-        if (!email) {
-          showToast("Informe seu e-mail para redefinir a senha.", "info");
-          return;
+  function handleReset() {
+    const email = getValues("email");
+    if (!email) {
+      showToast("Informe seu e-mail para redefinir a senha.", "info");
+      return;
+    }
+    resetPassword(email)
+      .then(() => showToast("E-mail de redefinição enviado!", "success"))
+      .catch((error: unknown) => {
+        if (error instanceof Error) {
+          showToast(error.message, "error");
+        } else {
+          showToast("Erro ao enviar e-mail. Tente novamente.", "error");
         }
-        resetPassword(email)
-          .then(() => showToast("E-mail de redefinição enviado!", "success"))
-          .catch((error: any) => showToast(error?.message || "Erro ao enviar e-mail. Tente novamente.", "error"));
-      }
-    async function onSubmit(data: LoginValues) {
-      try {
-        await loginWithEmail(data.email, data.password);
-        showToast("Login realizado com sucesso!", "success");
-        router.replace("/dashboard");
-      } catch (error: any) {
-        showToast(error?.message || "Erro ao entrar. Verifique suas credenciais.", "error");
+      });
+  }
+
+  async function onSubmit(data: LoginValues) {
+    try {
+      await loginWithEmail(data.email, data.password);
+      showToast("Login realizado com sucesso!", "success");
+      router.replace("/dashboard");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        showToast(error.message, "error");
+      } else {
+        showToast("Erro ao entrar. Verifique suas credenciais.", "error");
       }
     }
+  }
   const router = useRouter();
   const { showToast } = useToast();
   const { user } = useAuth();

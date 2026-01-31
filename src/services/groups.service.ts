@@ -10,7 +10,7 @@ export async function updateGrupoDescricao(grupoId: string, novaDescricao: strin
 
 export async function excluirGrupo(grupoId: string) {
   const grupoRef = doc(gruposRef, grupoId);
-  await grupoRef.delete();
+  await import("firebase/firestore").then(({ deleteDoc }) => deleteDoc(grupoRef));
 }
 // src/services/groups.service.ts
 import { db } from "@/lib/firebase/client";

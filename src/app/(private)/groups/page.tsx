@@ -1,7 +1,7 @@
 // src/app/(private)/groups/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { criarGrupo, adicionarMembro, removerMembro, buscarGrupo } from "@/services/groups.service";
 import { useAuth } from "@/hooks/useAuth";
 import { Grupo } from "@/types/group";

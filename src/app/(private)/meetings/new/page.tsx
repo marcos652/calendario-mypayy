@@ -33,7 +33,6 @@ export default function NewMeetingPage() {
         participants: buildParticipants(emails),
         participantEmails: emails,
         availability: profile?.availability ?? [],
-        grupoId: values.grupoId || undefined,
       });
       showToast("Meeting created.", "success");
       router.push(`/meetings/${meetingId}`);

@@ -28,7 +28,6 @@ export const meetingFormSchema = z
     description: z.string().optional(),
     meetingLink: z
       .string()
-      .optional()
       .transform((value) => (value ? value.trim() : ""))
       .refine((value) => {
             if (!value) {
@@ -44,7 +43,6 @@ export const meetingFormSchema = z
     endTime: z.string().regex(/^\d{2}:\d{2}$/),
     participants: z
       .string()
-      .optional()
       .transform((value) => (value ? value.trim() : ""))
       .refine((value) => {
         if (!value) {

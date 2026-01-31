@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase/client";
 import { Grupo } from "@/types/group";
-import { useRef } from "react";
+
 import { getUserNamesByIds } from "@/utils/user-names";
 
 export default function ListarGruposPage() {
@@ -109,12 +109,12 @@ export default function ListarGruposPage() {
                                 setMsg("Nome atualizado!");
                                 const grupo = await mod.buscarGrupo(grupoDetalhe.id);
                                 setGrupoDetalhe(grupo);
-                                setEditNome(null);
+                                setEditNome("");
                               }}
                             >Salvar</button>
                             <button
                               className="text-xs bg-gray-300 text-slate-700 rounded px-2 py-1 ml-1"
-                              onClick={() => setEditNome(null)}
+                              onClick={() => setEditNome("")}
                             >Cancelar</button>
                           </div>
                         )}
@@ -146,12 +146,12 @@ export default function ListarGruposPage() {
                                 setMsg("Descrição atualizada!");
                                 const grupo = await mod.buscarGrupo(grupoDetalhe.id);
                                 setGrupoDetalhe(grupo);
-                                setEditDescricao(null);
+                                setEditDescricao("");
                               }}
                             >Salvar</button>
                             <button
                               className="text-xs bg-gray-300 text-slate-700 rounded px-2 py-1 ml-1"
-                              onClick={() => setEditDescricao(null)}
+                              onClick={() => setEditDescricao("")}
                             >Cancelar</button>
                           </div>
                         )}

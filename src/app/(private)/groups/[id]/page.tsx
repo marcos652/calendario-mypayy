@@ -8,7 +8,7 @@ import { Grupo } from "@/types/group";
 import { Button } from "@/components/ui/button";
 
 export default function DetalheGrupoPage() {
-  const router = useRouter();
+  // const router = useRouter();
   const params = useParams();
   const grupoId = params?.id as string;
   const [grupo, setGrupo] = useState<Grupo | null>(null);
@@ -76,7 +76,7 @@ export default function DetalheGrupoPage() {
             {grupo.membros.map(uid => (
               <li key={uid} className="flex items-center gap-2">
                 <span className="text-sm text-slate-800">{uid}</span>
-                <Button size="xs" variant="destructive" onClick={() => handleRemoverMembro(uid)}>Remover</Button>
+                <Button size="sm" variant="danger" onClick={() => handleRemoverMembro(uid)}>Remover</Button>
                 {/* TODO: Permissão do membro */}
               </li>
             ))}
@@ -91,7 +91,7 @@ export default function DetalheGrupoPage() {
             <Button size="sm" onClick={handleAdicionarMembro}>Adicionar</Button>
           </div>
         </div>
-        <Button variant="destructive" onClick={handleExcluirGrupo}>Excluir grupo</Button>
+        <Button variant="danger" onClick={handleExcluirGrupo}>Excluir grupo</Button>
         {mensagem && <div className="text-red-600 font-medium mt-2">{mensagem}</div>}
       </div>
     </div>

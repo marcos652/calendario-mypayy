@@ -156,7 +156,6 @@ export const createMeeting = async (input: CreateMeetingInput): Promise<string> 
       status: "scheduled",
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-      grupoId: input.grupoId || null,
     });
   });
 
