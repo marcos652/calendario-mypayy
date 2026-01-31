@@ -19,11 +19,11 @@ const handler = async (req: NextRequest) => {
       text,
     });
     return NextResponse.json({ ok: true });
-  } catch (e: any) {
-    console.error("Erro ao enviar e-mail:", e);
-    return NextResponse.json({ ok: false, error: e.message || "Erro ao enviar e-mail." }, { status: 500 });
+  } catch (e) {
+    const error = e instanceof Error ? e : new Error(String(e));
+    console.error("Erro ao enviar e-mail:", error);
+    return NextResponse.json({ ok: false, error: error.message || "Erro ao enviar e-mail." }, { status: 500 });
   }
 };
 
 export { handler as POST };
-export default handler;
