@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+:root {
+  --fundo: #e0f2fe; /* azul claro */
+  --texto: #047857; /* verde escuro */
+}
+
+@theme inline {
+  --cor-fundo: var(--fundo);
+  --cor-texto: var(--texto);
+  --fonte-sans: var(--font-geist-sans);
+  --fonte-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --fundo: #bae6fd; /* azul clarinho */
+    --texto: #0c4a6e; /* azul escuro para contraste */
+  }
+}
+
+body {
+  background: var(--fundo);
+  color: var(--texto);
+  font-family: var(--fonte-sans), system-ui, -apple-system, sans-serif;
+}
