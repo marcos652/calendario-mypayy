@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { buscarGrupo, adicionarMembro, removerMembro } from "@/services/groups.service";
 import { Grupo } from "@/types/group";
 import { Button } from "@/components/ui/button";
