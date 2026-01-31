@@ -1,3 +1,5 @@
+// Certifique-se de definir as variáveis de ambiente SENDGRID_API_KEY e SENDGRID_FROM_EMAIL
+// no painel da Vercel ou em .env.local para funcionamento correto do envio de e-mails.
 import { NextRequest, NextResponse } from "next/server";
 import sgMail from "@sendgrid/mail";
 
