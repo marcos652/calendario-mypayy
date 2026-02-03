@@ -29,3 +29,4 @@ const handler = async (req: NextRequest) => {
 };
 
 export { handler as POST };
+export default handler;
