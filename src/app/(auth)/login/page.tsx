@@ -22,6 +22,7 @@ export default function LoginPage() {
   const [resetEmail, setResetEmail] = useState("");
   const [resetMessage, setResetMessage] = useState<string | null>(null);
   const [showReset, setShowReset] = useState(false);
+  const [isFormFocused, setIsFormFocused] = useState(false);
 
   async function handleReset(e?: React.FormEvent) {
     if (e) e.preventDefault();
@@ -72,7 +73,6 @@ export default function LoginPage() {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    getValues,
   } = useForm<LoginValues>({ resolver: zodResolver(loginSchema) });
 
   useEffect(() => {
@@ -101,15 +101,26 @@ export default function LoginPage() {
   }, []);
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-200 via-blue-100 to-blue-300 px-4">
-      <Card className="w-full max-w-md space-y-6 relative overflow-visible shadow-2xl border-0">
+      <Card
+        className={`w-full max-w-md space-y-8 bg-white/80 shadow-2xl backdrop-blur-md border-0 transition-all duration-300 relative overflow-visible ${
+          isFormFocused ? 'ring-2 ring-blue-300/80 scale-[1.015]' : ''
+        }`}
+      >
         <div className="flex flex-col items-center mb-2">
-          <span className="text-4xl">🔒</span>
+          <span className="text-4xl select-none">🔐</span>
         </div>
         <div className="text-center">
           <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Entrar</h1>
           <p className="text-base text-slate-500 mt-1">Acesse sua agenda de reuniões</p>
         </div>
-        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        <form
+          className="space-y-6"
+          onSubmit={handleSubmit(onSubmit)}
+          onFocus={() => setIsFormFocused(true)}
+          onBlur={e => {
+            if (!e.currentTarget.contains(e.relatedTarget)) setIsFormFocused(false);
+          }}
+        >
           <div>
             <Label htmlFor="email">E-mail</Label>
             <Input
@@ -117,8 +128,9 @@ export default function LoginPage() {
               type="email"
               autoComplete="username"
               {...register("email")}
+              className="mt-1 bg-white/80 focus:bg-blue-50/80 transition-colors"
             />
-            {errors.email && <p className="mt-1 text-xs text-red-600">{errors.email.message}</p>}
+            {errors.email && <p className="mt-1 text-xs text-red-500 animate-fade-in">{errors.email.message}</p>}
           </div>
           <div>
             <Label htmlFor="password">Senha</Label>
@@ -128,18 +140,19 @@ export default function LoginPage() {
                 type={showPassword ? "text" : "password"}
                 autoComplete="current-password"
                 {...register("password")}
+                className="mt-1 bg-white/80 focus:bg-blue-50/80 transition-colors pr-10"
               />
               <button
                 type="button"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-900"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-700 transition-colors"
                 tabIndex={-1}
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label="Mostrar senha"
               >
-                {showPassword ? "🙈" : "👁️"}
+                {showPassword ? <span className="text-lg">🙈</span> : <span className="text-lg">👁️</span>}
               </button>
             </div>
-            {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
+            {errors.password && <p className="mt-1 text-xs text-red-500 animate-fade-in">{errors.password.message}</p>}
           </div>
           <div className="flex items-center gap-2">
             <input
@@ -155,10 +168,17 @@ export default function LoginPage() {
           </div>
           <Button
             type="submit"
-            className="w-full bg-gradient-to-r from-green-400 to-blue-400 text-white font-bold py-2 rounded-lg shadow-md hover:from-green-500 hover:to-blue-500 transition"
+            className={`w-full mt-2 shadow-md hover:scale-[1.02] transition-transform bg-gradient-to-r from-blue-400 via-green-400 to-blue-500 text-white font-semibold ${isSubmitting ? 'animate-gradient-x' : ''}`}
+            size="lg"
             disabled={isSubmitting}
+            style={isSubmitting ? { backgroundSize: '200% 100%' } : {}}
           >
-            {isSubmitting ? "Entrando..." : "Entrar"}
+            {isSubmitting ? (
+              <span className="inline-flex items-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                Entrando...
+              </span>
+            ) : "Entrar"}
           </Button>
         </form>
         <div className="flex items-center justify-between text-sm mt-2">
@@ -196,10 +216,15 @@ export default function LoginPage() {
               />
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-blue-400 to-green-400 text-white font-bold py-2 rounded-lg shadow-md hover:from-blue-500 hover:to-green-500 transition"
+                className={`w-full bg-gradient-to-r from-blue-400 to-green-400 text-white font-bold py-2 rounded-lg shadow-md hover:from-blue-500 hover:to-green-500 transition ${resetting ? 'animate-gradient-x' : ''}`}
                 disabled={resetting}
               >
-                {resetting ? "Enviando..." : "Enviar link de redefinição"}
+                {resetting ? (
+                  <span className="inline-flex items-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+                    Enviando...
+                  </span>
+                ) : "Enviar link de redefinição"}
               </Button>
               {resetMessage && (
                 <div className={`text-sm mt-1 text-center ${resetMessage.includes("enviado") ? "text-green-600" : "text-red-600"}`}>

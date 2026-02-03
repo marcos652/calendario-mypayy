@@ -21,23 +21,27 @@ export default function CriarGrupoPage() {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6">
-      <div className="rounded-2xl border-2 border-green-200 bg-white/80 shadow-xl p-6 md:p-10 flex flex-col gap-6">
-        <h1 className="text-2xl font-bold mb-4">Criar Grupo</h1>
+    <div className="max-w-3xl mx-auto py-12 px-4 sm:px-8">
+      <div className="relative bg-white border-4 border-green-200 shadow-2xl rounded-3xl p-12 flex flex-col gap-8 items-center">
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-green-500 text-white rounded-full shadow-lg w-20 h-20 flex items-center justify-center text-5xl border-4 border-white">
+          <span role="img" aria-label="Grupo">👥</span>
+        </div>
+        <h1 className="text-3xl font-extrabold text-green-900 mb-2 mt-8 text-center drop-shadow">Criar novo grupo</h1>
+        <p className="text-slate-600 text-center mb-4 text-lg">Preencha as informações abaixo para criar um novo grupo de colaboração.</p>
         <input
-          className="border-2 border-green-200 rounded-lg p-2 mb-2"
+          className="border-2 border-green-300 rounded-xl p-4 mb-4 w-full text-lg focus:ring-2 focus:ring-green-400 outline-none transition"
           placeholder="Nome do grupo"
           value={nome}
           onChange={e => setNome(e.target.value)}
         />
         <textarea
-          className="border-2 border-green-200 rounded-lg p-2 mb-2"
-          placeholder="Descrição"
+          className="border-2 border-green-300 rounded-xl p-4 mb-4 w-full text-lg min-h-[100px] focus:ring-2 focus:ring-green-400 outline-none transition"
+          placeholder="Descrição do grupo (opcional)"
           value={descricao}
           onChange={e => setDescricao(e.target.value)}
         />
-        <Button onClick={handleCriarGrupo} disabled={!nome}>Criar</Button>
-        {mensagem && <div className="text-green-600 font-medium mt-2">{mensagem}</div>}
+        <Button onClick={handleCriarGrupo} disabled={!nome} className="w-full py-3 text-lg font-semibold rounded-xl bg-green-500 hover:bg-green-600 transition">Criar grupo</Button>
+        {mensagem && <div className="text-green-700 font-bold mt-4 text-center text-lg">{mensagem}</div>}
       </div>
     </div>
   );

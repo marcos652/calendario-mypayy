@@ -8,15 +8,29 @@ import { useToast } from "@/components/ui/toast";
 import { useMeetings } from "@/hooks/useMeetings";
 import { parseParticipantEmails, buildParticipants } from "@/utils/participants";
 import { getErrorMessage } from "@/utils/errors";
+import { useEffect, useState } from "react";
 
 export default function NewMeetingPage() {
   const router = useRouter();
   const { user, profile } = useAuth();
   const { create } = useMeetings();
   const { showToast } = useToast();
+  const [canSchedule, setCanSchedule] = useState(true);
+
+  useEffect(() => {
+    // Se grupo selecionado, verifica permissão
+    if (!profile) return;
+    // Se não há grupo, permite agendar
+    setCanSchedule(true);
+    // Se grupoId for preenchido, verifica permissão
+    // (MeetingForm envia grupoId no submit)
+  }, [profile]);
 
   const handleSubmit = async (values: MeetingFormValues) => {
-    if (!user) {
+    if (!user) return;
+    let grupoId = values.grupoId?.trim();
+    if (grupoId && profile?.gruposPermissoes && !profile.gruposPermissoes[grupoId]?.includes("agendar-reuniao")) {
+      showToast("Você não tem permissão para agendar reunião neste grupo.", "error");
       return;
     }
     const emails = parseParticipantEmails(values.participants ?? "");
@@ -33,6 +47,7 @@ export default function NewMeetingPage() {
         participants: buildParticipants(emails),
         participantEmails: emails,
         availability: profile?.availability ?? [],
+        grupoId: grupoId || undefined,
       });
       showToast("Meeting created.", "success");
       router.push(`/meetings/${meetingId}`);

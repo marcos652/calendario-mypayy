@@ -3,20 +3,28 @@
 import { useMemo, useState } from "react";
 import { addMonths, format, startOfWeek, addDays } from "date-fns";
 import { useMeetings } from "@/hooks/useMeetings";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 
 export default function CalendarPage() {
   const { meetings } = useMeetings();
+  const { profile } = useAuth();
+  // Se algum grupoId for informado, só mostra reuniões se tiver permissão de visualizar
+  const podeVer = (meeting: any) => {
+    if (!meeting.grupoId) return true;
+    if (!profile?.gruposPermissoes) return false;
+    return profile.gruposPermissoes[meeting.grupoId]?.includes("visualizar-agenda");
+  };
   const [view, setView] = useState<"month" | "week">("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
 
   const selectedMeetings = useMemo(() => {
     const key = format(selectedDate, "yyyy-MM-dd");
-    return meetings.filter((meeting) => meeting.date === key);
-  }, [meetings, selectedDate]);
+    return meetings.filter((meeting) => meeting.date === key && podeVer(meeting));
+  }, [meetings, selectedDate, profile]);
 
   const weekDays = useMemo(() => {
     const start = startOfWeek(selectedDate, { weekStartsOn: 0 });
@@ -52,7 +60,7 @@ export default function CalendarPage() {
           </div>
           <CalendarGrid
             currentDate={currentDate}
-            meetings={meetings}
+            meetings={meetings.filter(podeVer)}
             selectedDate={selectedDate}
             onSelectDate={setSelectedDate}
           />
@@ -63,7 +71,7 @@ export default function CalendarPage() {
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             {weekDays.map((day) => {
               const key = format(day, "yyyy-MM-dd");
-              const dayMeetings = meetings.filter((meeting) => meeting.date === key);
+              const dayMeetings = meetings.filter((meeting) => meeting.date === key && podeVer(meeting));
               return (
                 <div key={key} className="rounded-lg border border-slate-200 p-3">
                   <p className="text-sm font-semibold text-slate-900">{format(day, "EEE, dd 'de' MMM")}</p>
@@ -84,7 +92,24 @@ export default function CalendarPage() {
       )}
 
       <Card>
-        <h2 className="text-lg font-semibold text-slate-900">Reuniões em {format(selectedDate, "dd 'de' MMMM, yyyy")}</h2>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold text-slate-900">Reuniões em {format(selectedDate, "dd 'de' MMMM, yyyy")}</h2>
+          {selectedMeetings.length > 0 && (
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={async () => {
+                for (const meeting of selectedMeetings) {
+                  await cancelMeeting(meeting.id, meeting.ownerId);
+                }
+                // Atualiza lista
+                if (typeof window !== "undefined") window.location.reload();
+              }}
+            >
+              Excluir agenda do dia
+            </Button>
+          )}
+        </div>
         <div className="mt-4 space-y-3">
           {selectedMeetings.length === 0 && <p className="text-sm text-slate-500">Nenhuma reunião para este dia.</p>}
           {selectedMeetings.map((meeting) => (

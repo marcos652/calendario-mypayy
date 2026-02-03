@@ -64,6 +64,7 @@ const isWithinAvailability = (
 };
 
 export const listMeetingsForUser = async (uid: string, email?: string): Promise<Meeting[]> => {
+  if (!db) throw new Error("Firestore não inicializado");
   const meetingsRef = collection(db, "meetings");
   const ownerQuery = query(meetingsRef, where("ownerId", "==", uid), orderBy("date"));
   const participantQuery = email
@@ -88,6 +89,7 @@ export const listMeetingsForUser = async (uid: string, email?: string): Promise<
 };
 
 export const getMeetingById = async (id: string): Promise<Meeting | null> => {
+  if (!db) throw new Error("Firestore não inicializado");
   const ref = doc(db, "meetings", id);
   const snap = await getDoc(ref);
   if (!snap.exists()) {
@@ -111,6 +113,7 @@ export type CreateMeetingInput = {
 };
 
 export const createMeeting = async (input: CreateMeetingInput): Promise<string> => {
+  if (!db) throw new Error("Firestore não inicializado");
   const meetingsRef = collection(db, "meetings");
   const meetingRef = doc(meetingsRef);
 
@@ -142,6 +145,7 @@ export const createMeeting = async (input: CreateMeetingInput): Promise<string> 
     }
   }
 
+  if (!db) throw new Error("Firestore não inicializado");
   await runTransaction(db, async (transaction) => {
     transaction.set(meetingRef, {
       title: input.title,
@@ -202,6 +206,7 @@ export type UpdateMeetingInput = {
 };
 
 export const updateMeeting = async (input: UpdateMeetingInput): Promise<void> => {
+  if (!db) throw new Error("Firestore não inicializado");
   const meetingsRef = collection(db, "meetings");
   const meetingRef = doc(meetingsRef, input.id);
 
@@ -232,6 +237,7 @@ export const updateMeeting = async (input: UpdateMeetingInput): Promise<void> =>
     }
   }
 
+  if (!db) throw new Error("Firestore não inicializado");
   await runTransaction(db, async (transaction) => {
     const meetingSnap = await transaction.get(meetingRef);
     if (!meetingSnap.exists()) {
@@ -257,7 +263,9 @@ export const updateMeeting = async (input: UpdateMeetingInput): Promise<void> =>
 };
 
 export const cancelMeeting = async (id: string, ownerId: string): Promise<void> => {
+  if (!db) throw new Error("Firestore não inicializado");
   const ref = doc(db, "meetings", id);
+  if (!db) throw new Error("Firestore não inicializado");
   await runTransaction(db, async (transaction) => {
     const snap = await transaction.get(ref);
     if (!snap.exists()) {

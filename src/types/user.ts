@@ -9,12 +9,18 @@ export type AvailabilityRule = {
   enabled: boolean;
 };
 
+import type { GrupoPermissao } from "./group";
+
 export type UserProfile = {
   id: string;
   name: string;
   email: string;
   photoUrl?: string;
+  role?: "usuario" | "admin" | "master";
   availability: AvailabilityRule[];
+  gruposPermissoes?: {
+    [grupoId: string]: GrupoPermissao[];
+  };
   createdAt?: Date;
   updatedAt?: Date;
 };

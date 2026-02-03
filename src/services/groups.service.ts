@@ -1,3 +1,10 @@
+// Atualiza as permissões dos membros do grupo
+import type { GrupoPermissao } from "@/types/group";
+
+export async function atualizarPermissoesGrupo(grupoId: string, permissoes: { [uid: string]: GrupoPermissao[] }) {
+  const grupoRef = doc(gruposRef, grupoId);
+  await updateDoc(grupoRef, { permissoes });
+}
 export async function updateGrupoNome(grupoId: string, novoNome: string) {
   const grupoRef = doc(gruposRef, grupoId);
   await updateDoc(grupoRef, { nome: novoNome });

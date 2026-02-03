@@ -12,18 +12,21 @@ import { ensureUserProfile } from "@/services/users.service";
 export const registerWithEmail = async (
   name: string,
   email: string,
-  password: string
+  password: string,
+  role: "usuario" | "admin" | "master" = "usuario"
 ): Promise<User> => {
-  const credential = await createUserWithEmailAndPassword(auth, email, password);
+  if (!auth) throw new Error("Firebase Auth não inicializado");
+  const credential = await createUserWithEmailAndPassword(auth as import("firebase/auth").Auth, email, password);
   if (credential.user) {
     await updateProfile(credential.user, { displayName: name });
-    await ensureUserProfile(credential.user, { name });
+    await ensureUserProfile(credential.user, { name, role });
   }
   return credential.user;
 };
 
 export const loginWithEmail = async (email: string, password: string): Promise<User> => {
-  const credential = await signInWithEmailAndPassword(auth, email, password);
+  if (!auth) throw new Error("Firebase Auth não inicializado");
+  const credential = await signInWithEmailAndPassword(auth as import("firebase/auth").Auth, email, password);
   if (credential.user) {
     await ensureUserProfile(credential.user);
   }
@@ -31,9 +34,11 @@ export const loginWithEmail = async (email: string, password: string): Promise<U
 };
 
 export const logout = async (): Promise<void> => {
-  await signOut(auth);
+  if (!auth) throw new Error("Firebase Auth não inicializado");
+  await signOut(auth as import("firebase/auth").Auth);
 };
 
 export const resetPassword = async (email: string): Promise<void> => {
-  await sendPasswordResetEmail(auth, email);
+  if (!auth) throw new Error("Firebase Auth não inicializado");
+  await sendPasswordResetEmail(auth as import("firebase/auth").Auth, email);
 };

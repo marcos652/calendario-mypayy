@@ -25,7 +25,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-semibold text-slate-900">Painel</h1>
           <p className="text-sm text-slate-500">Acompanhe suas reuniões e disponibilidade.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap items-center">
           <Link href="/meetings/new">
             <Button>Nova reunião</Button>
           </Link>
@@ -70,14 +70,26 @@ export default function DashboardPage() {
             <p className="text-sm text-slate-500">Nenhuma reunião agendada.</p>
           )}
           {upcoming.map((meeting) => (
-            <div key={meeting.id} className="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+            <div key={meeting.id} className="flex items-center justify-between rounded-lg border border-slate-200 p-3 gap-2">
               <div>
                 <p className="font-medium text-slate-900">{meeting.title}</p>
                 <p className="text-xs text-slate-500">
                   {format(parseISO(meeting.date), "dd/MM/yyyy")} • {meeting.startTime} - {meeting.endTime}
                 </p>
               </div>
-              <Badge variant={meeting.status === "scheduled" ? "success" : "warning"}>{meeting.status}</Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant={meeting.status === "scheduled" ? "success" : "warning"}>{meeting.status}</Badge>
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={async () => {
+                    await import("@/hooks/useMeetings").then(mod => mod.useMeetings().cancel(meeting.id, meeting.ownerId));
+                    if (typeof window !== "undefined") window.location.reload();
+                  }}
+                >
+                  Excluir
+                </Button>
+              </div>
             </div>
           ))}
         </div>

@@ -65,7 +65,15 @@ export default function MeetingDetailPage() {
     );
   }
 
+  const grupoId = meeting.grupoId;
+  const { profile } = useAuth();
   const isOwner = user?.uid === meeting.ownerId;
+  const podeEditar =
+    isOwner ||
+    (grupoId && profile?.gruposPermissoes && profile.gruposPermissoes[grupoId]?.includes("editar-reuniao"));
+  const podeExcluir =
+    isOwner ||
+    (grupoId && profile?.gruposPermissoes && profile.gruposPermissoes[grupoId]?.includes("excluir-call"));
 
   return (
     <div className="space-y-6">
@@ -125,14 +133,18 @@ export default function MeetingDetailPage() {
         </div>
       </Card>
 
-      {isOwner && meeting.status === "scheduled" && (
+      {meeting.status === "scheduled" && (
         <div className="flex gap-2">
-          <Link href={`/meetings/${meeting.id}/edit`}>
-            <Button variant="secondary">Edit meeting</Button>
-          </Link>
-          <Button variant="danger" onClick={handleCancel}>
-            Cancel meeting
-          </Button>
+          {podeEditar && (
+            <Link href={`/meetings/${meeting.id}/edit`}>
+              <Button variant="secondary">Edit meeting</Button>
+            </Link>
+          )}
+          {podeExcluir && (
+            <Button variant="danger" onClick={handleCancel}>
+              Cancel meeting
+            </Button>
+          )}
         </div>
       )}
     </div>

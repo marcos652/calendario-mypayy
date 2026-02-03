@@ -1,0 +1,63 @@
+{
+  "info": {
+    "_postman_id": "scheduler-meeting-collection-2026",
+    "name": "Scheduler Meeting API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Criar Reunião (Google Calendar)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/google-calendar",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "google-calendar"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event\": {\n    \"subject\": \"Reunião de Teste\",\n    \"start\": { \"dateTime\": \"2026-02-03T10:00:00\", \"timeZone\": \"America/Sao_Paulo\" },\n    \"end\": { \"dateTime\": \"2026-02-03T11:00:00\", \"timeZone\": \"America/Sao_Paulo\" },\n    \"attendees\": [{ \"emailAddress\": { \"address\": \"participante@email.com\", \"name\": \"Participante\" } }]\n  },\n  \"code\": \"COLOQUE_O_AUTH_CODE_AQUI\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Criar Reunião (Teams)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/teams-meeting",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "teams-meeting"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"event\": {\n    \"subject\": \"Reunião Teams\",\n    \"start\": { \"dateTime\": \"2026-02-03T10:00:00\", \"timeZone\": \"America/Sao_Paulo\" },\n    \"end\": { \"dateTime\": \"2026-02-03T11:00:00\", \"timeZone\": \"America/Sao_Paulo\" },\n    \"attendees\": [{ \"emailAddress\": { \"address\": \"participante@email.com\", \"name\": \"Participante\" } }]\n  },\n  \"code\": \"COLOQUE_O_AUTH_CODE_AQUI\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Enviar E-mail (SendGrid)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/email",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "email"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"to\": \"destinatario@email.com\",\n  \"subject\": \"Assunto do E-mail\",\n  \"text\": \"Corpo do e-mail aqui\"\n}"
+        }
+      }
+    }
+  ]
+}

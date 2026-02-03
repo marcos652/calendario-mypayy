@@ -76,10 +76,17 @@ export default function EditMeetingPage() {
     );
   }
 
-  if (user?.uid !== meeting.ownerId) {
+
+  // Permissão: só pode editar se for owner OU tiver permissão no grupo
+  const grupoId = meeting.grupoId;
+  const podeEditar =
+    user?.uid === meeting.ownerId ||
+    (grupoId && profile?.gruposPermissoes && profile.gruposPermissoes[grupoId]?.includes("editar-reuniao"));
+
+  if (!podeEditar) {
     return (
       <Card>
-        <p className="text-sm text-slate-500">Only the owner can edit this meeting.</p>
+        <p className="text-sm text-slate-500">Você não tem permissão para editar esta reunião.</p>
       </Card>
     );
   }

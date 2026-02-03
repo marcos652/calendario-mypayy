@@ -2,21 +2,53 @@
 "use client";
 
 import { useState } from "react";
-import { criarGrupo, adicionarMembro, removerMembro, buscarGrupo } from "@/services/groups.service";
+import { criarGrupo, adicionarMembro, removerMembro, buscarGrupo, atualizarPermissoesGrupo } from "@/services/groups.service";
+import { updateUserGroupPermissions } from "@/services/users.service";
 import { useAuth } from "@/hooks/useAuth";
 import { Grupo } from "@/types/group";
+import type { GrupoPermissao } from "@/types/group";
 import { Button } from "@/components/ui/button";
 
 export default function GerenciarGruposPage() {
+  const [salvandoPerms, setSalvandoPerms] = useState(false);
+  const [msgPerms, setMsgPerms] = useState<string | null>(null);
+  // Salva permissões no backend
+  const handleSalvarPermissoes = async () => {
+    if (!grupo) return;
+    setSalvandoPerms(true);
+    setMsgPerms(null);
+    try {
+      await atualizarPermissoesGrupo(grupo.id, permissoes);
+      // Sincroniza permissões no perfil de cada usuário
+      await Promise.all(
+        Object.entries(permissoes).map(([uid, perms]) =>
+          updateUserGroupPermissions(uid, grupo.id, perms)
+        )
+      );
+      setMsgPerms("Permissões salvas e sincronizadas!");
+    } catch {
+      // erro tratado
+    } finally {
+      setSalvandoPerms(false);
+    }
+  };
+
+
   const { user } = useAuth();
   const [nome, setNome] = useState("");
   const [descricao, setDescricao] = useState("");
   const [grupo, setGrupo] = useState<Grupo | null>(null);
   const [grupoId, setGrupoId] = useState("");
   const [novoMembro, setNovoMembro] = useState("");
-  const [permissoes, setPermissoes] = useState<{[uid: string]: string}>({});
-  const [novaPermissao, setNovaPermissao] = useState("");
-  const [uidPermissao, setUidPermissao] = useState("");
+  // permissões: { [uid]: GrupoPermissao[] }
+  const [permissoes, setPermissoes] = useState<{ [uid: string]: GrupoPermissao[] }>({});
+  const permissoesPossiveis: GrupoPermissao[] = [
+    "visualizar-agenda",
+    "modificar-agenda",
+    "agendar-reuniao",
+    "excluir-call",
+    "editar-reuniao",
+  ];
 
   const handleCriarGrupo = async () => {
     if (!user) return;
@@ -29,7 +61,9 @@ export default function GerenciarGruposPage() {
     if (!grupoId) return;
     const g = await buscarGrupo(grupoId);
     setGrupo(g);
-    // Aqui você pode buscar permissões reais do backend se desejar
+    // Carrega permissões do grupo, se existirem
+    if (g?.permissoes) setPermissoes(g.permissoes);
+    else setPermissoes({});
   };
 
   const handleAdicionarMembro = async () => {
@@ -45,17 +79,25 @@ export default function GerenciarGruposPage() {
     handleBuscarGrupo();
   };
 
-  const handleDefinirPermissao = () => {
-    if (!uidPermissao || !novaPermissao) return;
-    setPermissoes((prev) => ({ ...prev, [uidPermissao]: novaPermissao }));
-    setUidPermissao("");
-    setNovaPermissao("");
+
+  // Atualiza permissões de um usuário
+  const handlePermissaoChange = (uid: string, perm: GrupoPermissao, checked: boolean) => {
+    setPermissoes(prev => {
+      const atual = prev[uid] || [];
+      return {
+        ...prev,
+        [uid]: checked ? [...new Set([...atual, perm])] : atual.filter(p => p !== perm),
+      };
+    });
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <div className="rounded-2xl border-2 border-green-200 bg-white/80 shadow-xl p-6 md:p-10 flex flex-col gap-6">
-        <h1 className="text-2xl font-bold mb-4">Gerenciar Grupos e Permissões</h1>
+    <div className="max-w-3xl mx-auto py-12 px-4 sm:px-8">
+      <div className="relative bg-white border-4 border-green-200 shadow-2xl rounded-3xl p-12 flex flex-col gap-8 items-center">
+        <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-green-500 text-white rounded-full shadow-lg w-20 h-20 flex items-center justify-center text-5xl border-4 border-white">
+          <span role="img" aria-label="Grupo">👥</span>
+        </div>
+        <h1 className="text-3xl font-extrabold text-green-900 mb-2 mt-8 text-center drop-shadow">Gerenciar Grupos e Permissões</h1>
         <div className="mb-4 flex flex-col md:flex-row gap-2 items-end">
           <div className="flex flex-col flex-1">
             <label htmlFor="nome-grupo" className="mb-1 text-sm font-medium text-slate-700">Nome do grupo</label>
@@ -93,43 +135,49 @@ export default function GerenciarGruposPage() {
           <Button className="h-10 mt-4 md:mt-0" onClick={handleBuscarGrupo}>Buscar grupo</Button>
         </div>
         {grupo && (
-          <div className="border-2 border-green-200 p-4 rounded-xl bg-green-50/40">
-            <h2 className="font-semibold text-lg">{grupo.nome}</h2>
-            <p className="text-sm text-slate-600">{grupo.descricao}</p>
-            <h3 className="mt-4 font-semibold">Membros:</h3>
-            <ul className="mb-2">
-              {grupo.membros.map((m) => (
-                <li key={m} className="flex items-center justify-between">
-                  <span>{m} <span className="ml-2 text-xs text-slate-500">Permissão: {permissoes[m] || "usuário"}</span></span>
+          <div className="relative bg-white border-4 border-green-200 shadow-2xl rounded-3xl p-8 flex flex-col gap-6 items-center mt-8">
+            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-green-500 text-white rounded-full shadow-lg w-16 h-16 flex items-center justify-center text-4xl border-4 border-white">
+              <span role="img" aria-label="Grupo">👥</span>
+            </div>
+            <h2 className="text-2xl font-bold text-green-800 mt-8">{grupo.nome}</h2>
+            <p className="text-slate-700 mb-2 text-lg">{grupo.descricao}</p>
+            <h3 className="font-bold text-green-700 mb-2">Membros</h3>
+            <ul className="mb-2 w-full">
+              {grupo.membros.map((m: string) => (
+                <li key={m} className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
+                  <span className="text-lg text-slate-800 font-mono">{m}</span>
+                  <div className="flex flex-wrap gap-2">
+                    {permissoesPossiveis.map(perm => (
+                      <label key={perm} className="flex items-center gap-1 text-xs bg-green-100 px-2 py-1 rounded">
+                        <input
+                          type="checkbox"
+                          checked={permissoes[m]?.includes(perm) || false}
+                          onChange={e => handlePermissaoChange(m, perm, e.target.checked)}
+                        />
+                        {perm.replace(/-/g, ' ')}
+                      </label>
+                    ))}
+                  </div>
                   <Button variant="danger" size="sm" onClick={() => handleRemoverMembro(m)}>
                     Remover
                   </Button>
                 </li>
               ))}
             </ul>
-            <div className="flex gap-2 mb-2">
+            <div className="flex gap-2 mb-2 w-full">
               <input
-                className="border p-2"
+                className="border-2 border-green-200 rounded-lg p-2 text-lg flex-1"
                 placeholder="ID do novo membro"
                 value={novoMembro}
                 onChange={e => setNovoMembro(e.target.value)}
               />
               <Button onClick={handleAdicionarMembro}>Adicionar membro</Button>
             </div>
-            <div className="flex gap-2 items-center">
-              <input
-                className="border p-2"
-                placeholder="ID do membro"
-                value={uidPermissao}
-                onChange={e => setUidPermissao(e.target.value)}
-              />
-              <input
-                className="border p-2"
-                placeholder="Permissão (ex: admin, usuário)"
-                value={novaPermissao}
-                onChange={e => setNovaPermissao(e.target.value)}
-              />
-              <Button onClick={handleDefinirPermissao}>Definir permissão</Button>
+            <div className="flex gap-2 mt-4 w-full">
+              <Button onClick={handleSalvarPermissoes} disabled={salvandoPerms} className="w-full py-3 text-lg font-semibold rounded-xl bg-green-600 hover:bg-green-700 transition">
+                {salvandoPerms ? "Salvando..." : "Salvar permissões"}
+              </Button>
+              {msgPerms && <span className={`text-sm ${msgPerms.includes("sucesso") ? "text-green-600" : "text-red-600"}`}>{msgPerms}</span>}
             </div>
           </div>
         )}

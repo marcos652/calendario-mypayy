@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { meetingFormSchema } from "@/lib/zod-schemas";
@@ -7,6 +8,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { getMicrosoftOAuthUrl } from "@/lib/microsoft-oauth";
 
 export type MeetingFormValues = z.infer<typeof meetingFormSchema>;
 
@@ -18,9 +20,11 @@ type MeetingFormProps = {
 };
 
 export const MeetingForm = ({ initialValues, onSubmit, submitLabel = "Save meeting", loading }: MeetingFormProps) => {
+
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<MeetingFormValues>({
     resolver: zodResolver(meetingFormSchema),
@@ -36,6 +40,58 @@ export const MeetingForm = ({ initialValues, onSubmit, submitLabel = "Save meeti
     },
   });
 
+
+  // Integração Microsoft Teams (placeholder)
+  const [teamsLoading, setTeamsLoading] = useState(false);
+  const handleGerarTeams = async () => {
+    setTeamsLoading(true);
+    try {
+      // Detecta code na URL após redirecionamento
+      let teamsCode: string | null = null;
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get("code");
+        if (code) {
+          teamsCode = code;
+          url.searchParams.delete("code");
+          window.history.replaceState({}, document.title, url.pathname);
+        }
+      }
+      if (!teamsCode) {
+        window.location.href = getMicrosoftOAuthUrl();
+        return;
+      }
+      // Monta dados do evento
+      const values = getValues();
+      const event = {
+        subject: values.title || "Reunião",
+        body: { contentType: "HTML", content: values.description || "" },
+        start: { dateTime: `${values.date}T${values.startTime}:00`, timeZone: "America/Sao_Paulo" },
+        end: { dateTime: `${values.date}T${values.endTime}:00`, timeZone: "America/Sao_Paulo" },
+        attendees: (values.participants || "").split(/[,;\s]+/).filter(Boolean).map((email: string) => ({
+          emailAddress: { address: email, name: email },
+          type: "required"
+        })),
+        isOnlineMeeting: true,
+        onlineMeetingProvider: "teamsForBusiness"
+      };
+      // Chama API route
+      const res = await fetch("/api/teams-meeting", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: teamsCode, event }),
+      });
+      const data = await res.json();
+      if (data.teamsLink) {
+        setValue("meetingLink", data.teamsLink, { shouldValidate: true });
+      } else {
+        alert("Erro ao gerar link do Teams: " + (data.error || ""));
+      }
+    } finally {
+      setTeamsLoading(false);
+    }
+  };
+
   return (
     <form className="space-y-4" onSubmit={handleSubmit(onSubmit)}>
       <div>
@@ -49,11 +105,16 @@ export const MeetingForm = ({ initialValues, onSubmit, submitLabel = "Save meeti
       </div>
       <div>
         <Label htmlFor="meetingLink">Meeting link</Label>
-        <Input
-          id="meetingLink"
-          placeholder="meet.google.com/xxx or https://teams.microsoft.com/..."
-          {...register("meetingLink")}
-        />
+        <div className="flex gap-2 flex-wrap">
+          <Input
+            id="meetingLink"
+            placeholder="https://teams.microsoft.com/l/meetup-join/..."
+            {...register("meetingLink")}
+          />
+          <Button type="button" variant="secondary" onClick={handleGerarTeams} disabled={teamsLoading}>
+            {teamsLoading ? "Gerando..." : "Gerar Teams"}
+          </Button>
+        </div>
         {errors.meetingLink && (
           <p className="mt-1 text-xs text-red-600">{errors.meetingLink.message}</p>
         )}

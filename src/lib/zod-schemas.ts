@@ -79,6 +79,7 @@ export const registerSchema = z
     email: z.string().email(),
     password: z.string().min(6),
     confirmPassword: z.string().min(6),
+    role: z.enum(["usuario", "admin", "master"]).default("usuario"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
